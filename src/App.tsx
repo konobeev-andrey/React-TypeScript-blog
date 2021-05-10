@@ -1,37 +1,37 @@
-import "./App.css";
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { getPostsData } from "./redux/postsRedusers";
-import { getCommentsPost, getPostOpen } from "./redux/postRedusers";
+import "./App.css";
 import { Posts } from "./Posts/Posts";
+import { getCommentsPost, getPostOpen } from "./redux/postRedusers";
+import { getPostsData } from "./redux/postsRedusers";
 
-type AppPropsType = {
-  // getPostsData(): ThunkPostsType;
-  // getCommentsPost(postId: number): ThunkPostType;
-  // getPostOpen(postId: number): ThunkPostType;
-};
-
-export const App: React.FC<AppPropsType> = () => {
+/**
+ * @param callback - thunk
+ * @param props - props for thunk
+ *
+ * @returns memoCallback - memoize callback function
+ */
+export function useThunkCallback(callback: (props: any) => void, props: any) {
   const dispatch = useDispatch();
+  const memoCallback = useCallback(() => dispatch(callback(props)), [
+    callback,
+    dispatch,
+    props,
+  ]);
+  return memoCallback;
+}
+
+type AppPropsType = {};
+export const App: React.FC<AppPropsType> = () => {
+  const postsData = useThunkCallback(getPostsData, null);
+  const postOpen = useThunkCallback(getPostOpen, 1);
+  const commentsPost = useThunkCallback(getCommentsPost, 1);
 
   useEffect(() => {
-    dispatch(getPostsData());
-    dispatch(getCommentsPost(1));
-    dispatch(getPostOpen(1));
-    // props.setMessageError('ерунда какая то')
-  }, []);
+    postsData();
+    postOpen();
+    commentsPost();
+  }, [postsData, commentsPost, postOpen]);
 
   return <Posts />;
 };
-
-// console.log(App);
-// const AppContainer = compose<MdtpType & RouteComponentProps>(
-//   withRouter,
-//   connect<null, MdtpType, null, StateType>(null, {
-//     getPostsData,
-//     getCommentsPost,
-//     getPostOpen,
-//   })
-// )(App);
-
-// export default <AppContainer />;
