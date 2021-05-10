@@ -1,28 +1,31 @@
 import React, { useEffect } from "react";
-import Post from "./../Post/Post";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
+import { useThunkCallback } from "../App";
+import { Preloader } from "../common/Preloader/Preloader";
 import { getPostsData, PostType } from "../redux/postsRedusers";
-import Preloader from "../common/Preloader/Preloader";
 import { StateType } from "../redux/state";
+import { Post } from "./../Post/Post";
 
 export const Posts: React.FC = () => {
-  const dispatch = useDispatch();
   const posts = useSelector<StateType, Array<PostType>>(
     (state) => state.posts.data
   );
 
+  const postsData = useThunkCallback(getPostsData, null);
+
   useEffect(() => {
-    dispatch(getPostsData());
-  }, []);
+    postsData();
+  }, [postsData]);
 
   let postsRevers = [...posts].reverse();
+
   return (
     <div>
-      {Boolean(postsRevers.length) ? (
+      {!postsRevers.length ? (
         <Preloader />
       ) : (
         postsRevers.map(({ id, title, body }) => (
-          <Post key={id} id={id} title={title} body={body} />
+          <Post key={id} id={id.toString()} title={title} body={body} />
         ))
       )}
     </div>
